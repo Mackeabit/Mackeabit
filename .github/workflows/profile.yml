@@ -56,14 +56,14 @@ jobs:
               }
             }' > .tmp/calendar.json
 
-      - name: Render profile for light, dark and mobile screens
+      - name: Prepare standalone icons and contribution animations
         run: python3 -B scripts/render_profile.py
 
       - name: Publish updated profile
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md assets/profile-*.svg generated/
+          git add assets/accent.svg assets/tools/ generated/
           if git diff --cached --quiet; then
             echo "Profile already up to date."
             exit 0

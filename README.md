@@ -1,6 +1,35 @@
+<img src="./assets/accent.svg" width="100%" height="4" alt="" />
+
+<img align="right" src="./assets/logo.png" width="88" height="88" alt="Mackeabit monogram" />
+
+# Mackeabit
+
+*Curious by default.*
+
+Learning by doing.\
+Making everyday things simpler.
+
+### Currently exploring
+
+- **AI & Automation** — Smarter everyday workflows.
+- **Systems & Security** — Understanding what runs beneath.
+- **Everyday Tools** — Small ideas. Useful changes.
+
+### Tech & Tools
+
+[![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
+
+Java · Python · Git · Codex · Obsidian
+
+*Always learning.*
+
+### Contribution trail
+
+One small step at a time.
+
 <picture>
-  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="./assets/profile-dark-mobile.svg">
-  <source media="(max-width: 600px)" srcset="./assets/profile-light-mobile.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/profile-dark.svg">
-  <img src="./assets/profile-light.svg" width="100%" alt="Mackeabit — Learning by doing. Making everyday things simpler. Exploring AI &amp; Automation, Systems &amp; Security, and Everyday Tools. Java · Python · Git · Codex · Obsidian. A teal snake follows my real GitHub contributions.">
+  <source media="(prefers-color-scheme: dark)" srcset="./generated/trail-dark.svg">
+  <img src="./generated/trail-light.svg" width="100%" alt="A teal snake follows Mackeabit's real GitHub contribution calendar.">
 </picture>
+
+*Keep learning. Keep moving.*
