@@ -1,0 +1,14 @@
+{
+  "assets/icons/java.svg": "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/java/java-original.svg",
+  "assets/icons/python.svg": "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/python/python-original.svg",
+  "assets/icons/git.svg": "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/icons/git/git-original.svg",
+  "assets/icons/codex.svg": "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/codex.svg",
+  "assets/icons/obsidian.svg": "https://cdn.jsdelivr.net/npm/simple-icons@11.15.0/icons/obsidian.svg",
+  "assets/icons/sparkles.svg": "https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/sparkles.svg",
+  "assets/icons/shield-check.svg": "https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/shield-check.svg",
+  "assets/icons/wrench.svg": "https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/wrench.svg",
+  "licenses/devicon.txt": "https://cdn.jsdelivr.net/gh/devicons/devicon@v2.17.0/LICENSE",
+  "licenses/lobehub-icons.txt": "https://raw.githubusercontent.com/lobehub/lobe-icons/aea0ecb0fe1439467219197c52ffaeb579dfe33f/LICENSE",
+  "licenses/simple-icons.txt": "https://cdn.jsdelivr.net/npm/simple-icons@11.15.0/LICENSE.md",
+  "licenses/lucide.txt": "https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/LICENSE"
+}

@@ -1,0 +1,72 @@
+name: Update profile and contribution snake
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 0 * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/profile.yml"
+      - "scripts/**"
+      - "assets/icons/**"
+      - "assets/logo.png"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out profile
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Generate snake from Mackeabit's GitHub contributions
+        uses: Platane/snk/svg-only@d8f6715049803e982ee5ff501b6b9b7d5deeb09b # v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            generated/snake-light.svg?color_snake=#25c6b0&color_dots=#e9efec,#d3e6df,#9acdbd,#53ac96,#13856c
+            generated/snake-dark.svg?palette=github-dark&color_snake=#25c6b0&color_dots=#212c26,#25453b,#27735f,#27a78b,#53d9b9
+
+      - name: Read contribution calendar metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROFILE_OWNER: ${{ github.repository_owner }}
+        run: |
+          mkdir -p .tmp
+          gh api graphql -F login="$PROFILE_OWNER" -f query='
+            query($login: String!) {
+              user(login: $login) {
+                login
+                contributionsCollection {
+                  contributionCalendar {
+                    totalContributions
+                    weeks {
+                      contributionDays { date contributionCount }
+                    }
+                  }
+                }
+              }
+            }' > .tmp/calendar.json
+
+      - name: Render profile for light, dark and mobile screens
+        run: python3 -B scripts/render_profile.py
+
+      - name: Publish updated profile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md assets/profile-*.svg generated/
+          if git diff --cached --quiet; then
+            echo "Profile already up to date."
+            exit 0
+          fi
+          git commit -m "Refresh profile with latest GitHub contributions"
+          git push origin HEAD:main
