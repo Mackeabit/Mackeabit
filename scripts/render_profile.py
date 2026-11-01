@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -78,7 +77,7 @@ def prepare_snakes():
             if "u" in node.get("class", "").split():
                 svg.remove(node)
         title = element("title")
-        title.text = "Mackeabit's real GitHub contributions"
+        title.text = "Mackeabit's real public repository activity"
         svg.insert(0, title)
         motion = element("style")
         motion.text = "@media(prefers-reduced-motion:reduce){*{animation:none!important}}"
@@ -87,33 +86,31 @@ def prepare_snakes():
 
 
 def update_activity():
-    response = json.loads((ROOT / ".tmp" / "calendar.json").read_text(encoding="utf-8"))
-    if response.get("errors"):
-        raise ValueError(f"GitHub calendar request failed: {response['errors']}")
-    user = response["data"]["user"]
-    if user["login"].lower() != "mackeabit":
+    calendar = json.loads((ROOT / ".tmp" / "repository-activity.json").read_text(encoding="utf-8"))
+    if calendar["account"].lower() != "mackeabit":
         raise ValueError("Unexpected GitHub account")
-    calendar = user["contributionsCollection"]["contributionCalendar"]
-    days = [day for week in calendar["weeks"] for day in week["contributionDays"]]
-    if not 350 <= len(days) <= 378:
-        raise ValueError("Incomplete contribution calendar")
+    days = calendar["days"]
+    if not 365 <= len(days) <= 371:
+        raise ValueError("Incomplete repository activity calendar")
+    if sum(day["count"] for day in days) != calendar["total_contributions"]:
+        raise ValueError("Activity totals do not match daily counts")
+    if sum(day["count"] > 0 for day in days) != calendar["active_days"]:
+        raise ValueError("Active-day total does not match daily counts")
     activity_path = ROOT / "generated" / "activity.json"
     if activity_path.exists():
         previous = json.loads(activity_path.read_text(encoding="utf-8"))
-        if previous.get("total_contributions", 0) and calendar["totalContributions"] == 0:
-            raise ValueError("GitHub returned an empty calendar. Check profile visibility and token access; the published snake will be preserved.")
-    metadata = dict(
-        account=user["login"],
-        start=days[0]["date"],
-        end=days[-1]["date"],
-        total_contributions=calendar["totalContributions"],
-        active_days=sum(day["contributionCount"] > 0 for day in days),
-        calendar_days=len(days),
-        updated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        source="GitHub GraphQL contributionCalendar",
-        generator="Platane/snk@d8f6715049803e982ee5ff501b6b9b7d5deeb09b",
-    )
+        if previous.get("total_contributions", 0) and calendar["total_contributions"] == 0:
+            raise ValueError("GitHub returned empty activity; the published snake will be preserved.")
+    for theme in ("light", "dark"):
+        svg = ET.parse(ROOT / "generated" / f"snake-{theme}.svg").getroot()
+        cells = [node for node in svg.iter() if "c" in node.get("class", "").split()]
+        active = sum(len(node.get("class", "").split()) > 1 for node in cells)
+        if len(cells) != len(days) or active != calendar["active_days"]:
+            raise ValueError("Generated snake does not match the collected activity")
+    metadata = {key: value for key, value in calendar.items() if key != "days"}
+    metadata["generator"] = "Platane/snk@d8f6715049803e982ee5ff501b6b9b7d5deeb09b with repository activity adapter"
     activity_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    (ROOT / "generated" / "activity-calendar.json").write_text(json.dumps(calendar, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(metadata, indent=2))
 
 

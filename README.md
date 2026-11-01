@@ -29,7 +29,7 @@ One small step at a time.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./generated/trail-dark.svg">
-  <img src="./generated/trail-light.svg" width="100%" alt="A teal snake follows Mackeabit's real GitHub contribution calendar.">
+  <img src="./generated/trail-light.svg" width="100%" alt="A teal snake follows Mackeabit's real public repository activity.">
 </picture>
 
 *Keep learning. Keep moving.*
