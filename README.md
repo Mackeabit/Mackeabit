@@ -19,10 +19,6 @@ Making everyday things simpler.
 
 [![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
 
-Java · Python · Git · Codex · Obsidian
-
-*Always learning.*
-
 ### Contribution trail
 
 One small step at a time.
