@@ -4,28 +4,23 @@
 
 # Mackeabit<br clear="right" />
 
-*Curious by default.*
+*Make it useful. Make it feel right.*
 
-Learning by doing.\
-Making everyday things simpler.
+I build tools around everyday needs, with a focus on automation, simplicity, and the details that make them better.
 
-### Currently exploring
+### Focus
 
-- **AI & Automation** — Smarter everyday workflows.
-- **Systems & Security** — Understanding what runs beneath.
-- **Everyday Tools** — Small ideas. Useful changes.
+- **AI & Automation** — Less repetition. More room to think.
+- **Systems & Security** — Understand how it works—and where it can fail.
+- **Everyday Tools** — Solve the friction. Refine the experience.
 
 ### Tech & Tools
 
 [![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
 
-### Contribution trail
-
-One small step at a time.
+### Activity
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./generated/trail-dark.svg">
   <img src="./generated/trail-light.svg" width="100%" alt="A teal snake follows Mackeabit's real public repository activity.">
 </picture>
-
-*Keep learning. Keep moving.*
