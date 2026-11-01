@@ -2,7 +2,7 @@
 
 <img align="right" src="./assets/logo.png" width="88" height="88" alt="Mackeabit monogram" />
 
-# Mackeabit
+# Mackeabit<br clear="right" />
 
 *Curious by default.*
 
