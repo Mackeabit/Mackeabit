@@ -1,3 +1,31 @@
+# Profile maintenance — Codex activity
+
+The README now displays account-wide Codex token activity instead of the GitHub contribution snake. The text, logo, and tool icons remain independent Markdown and assets.
+
+## Current activity pipeline (2026-11-03)
+
+- `scripts/codex_activity.py` reads `account/usage/read` through an already-authenticated Codex app-server. It never starts a model turn.
+- The daily buckets and five summary metrics are validated and explicitly allowlisted. No conversations, account identifiers, email, repository names, or credentials enter the output.
+- `generated/codex-activity.json` contains the published aggregates. Light/dark SVGs are self-contained and require no external fonts, scripts, images, or public server.
+- The calendar displays 53 Sunday-first week columns ending at the latest available daily bucket. Missing dates within the display period are rendered as zero; future cells are omitted. Service date labels are preserved without timezone conversion.
+- Blue levels use quartiles of nonzero daily counts in the displayed range. This reproduces the calendar style, not an undocumented exact Codex color scale. Summary numbers come directly from Codex; they are not recomputed from the rolling calendar.
+- `Data through` shows the latest date returned by the service, which can lag behind today. Null optional summary values show an em dash. Missing/empty data, invalid dates/counts, stale data over seven days, or declining date/lifetime totals stop publication and preserve the previous image.
+- A private, always-on host runs the installed script daily at 00:37 UTC (09:37 Asia/Seoul). The desktop PC is not involved. The private host reuses its existing Codex login and GitHub connector; no GitHub PAT or Codex token is copied into this repository.
+- Publishing opens a temporary, nonpersistent app-server context solely for direct MCP tool calls. It creates one Git tree/commit for the three output files and advances `main` without force using the observed head as a lease. Concurrent updates cause failure, not overwrites. Every published file is read back at the commit SHA.
+- The installed runner is a reviewed snapshot: it does not download or execute newer repository scripts automatically. Deploy script updates deliberately. A failed or uncertain publish is safe to rerun: remote files are compared before another commit.
+- GitHub Actions only runs source tests and checks icon generation. The former daily snake job is retired; old snake files/scripts remain as history and are no longer displayed or scheduled.
+
+Validation: `python3 -B -m unittest discover -s tests -v`.
+Offline preview: `python3 -B scripts/codex_activity.py --input /path/to/usage-response.json`.
+Live read/render: `python3 -B scripts/codex_activity.py --codex /path/to/codex`.
+Live refresh: add `--publish` (requires the existing connected GitHub account and the three initialized output files). For first-time setup only, `--bootstrap` creates all three files when none exist; it refuses a partially missing set.
+
+Reference: https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt
+
+## Historical GitHub snake pipeline (retired 2026-11-03)
+
+The following records describe the former pipeline, not the current schedule or README activity source.
+
 # Profile maintenance
 
 The introduction, interests, headings and tool names are real Markdown in `README.md`. The supplied Mackeabit logo, five monochrome tool icons and teal contribution snake are separate images.

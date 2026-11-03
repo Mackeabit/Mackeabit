@@ -117,11 +117,13 @@ def update_activity():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assets-only", action="store_true", help="Prepare assets from existing snake files without changing activity metadata.")
+    parser.add_argument("--icons-only", action="store_true", help="Prepare icon tiles and accent without touching retired contribution graphics.")
     args = parser.parse_args()
-    if not args.assets_only:
+    if not args.assets_only and not args.icons_only:
         update_activity()
     prepare_icons()
-    prepare_snakes()
+    if not args.icons_only:
+        prepare_snakes()
     print("Prepared separate icons and contribution animations. README.md is unchanged.")
 
 
