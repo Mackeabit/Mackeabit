@@ -49,7 +49,30 @@ const entries = ["solver/getBestRoute", "solver/getPathToPose", "svg-creator/ind
 for (const entry of entries) await compileModule(entry);
 const load = (entry) => import(pathToFileURL(path.join(runtime, entry + ".mjs")).href);
 const [{ getBestRoute }, { getPathToPose }, { createSvg }, { snake4 }, { cellsToGrid }] = await Promise.all(entries.map(load));
-const calendar = JSON.parse(await readFile(path.join(root, ".tmp/repository-activity.json"), "utf8"));
+const ai = process.argv.includes("--ai");
+let calendar;
+if (ai) {
+  const data = JSON.parse(await readFile(path.join(root, "generated/codex-activity.json"), "utf8"));
+  const end = new Date(data.dataThrough + "T00:00:00Z");
+  if (!Number.isFinite(end.getTime()) || !Array.isArray(data.days)) throw new Error("Invalid AI activity data");
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - end.getUTCDay() - 52 * 7);
+  const counts = new Map(data.days.map(d => [d.date, d.tokens]));
+  if (counts.size !== data.days.length || data.days.some(d => !Number.isSafeInteger(d.tokens) || d.tokens < 0)) throw new Error("Invalid daily token counts");
+  const active = data.days.filter(d => d.date >= start.toISOString().slice(0,10) && d.date <= data.dataThrough && d.tokens > 0).map(d => d.tokens).sort((a,b) => a-b);
+  if (!active.length) throw new Error("No activity to animate");
+  const cuts = [.25,.5,.75].map(q => active[Math.floor((active.length-1)*q)]);
+  const days = [];
+  for (let i=0; i<371; i++) {
+    const d = new Date(start); d.setUTCDate(d.getUTCDate()+i);
+    if (d > end) break;
+    const date = d.toISOString().slice(0,10), count = counts.get(date) ?? 0;
+    days.push({date, count, level: count === 0 ? 0 : 1 + cuts.filter(c => count > c).length, x:Math.floor(i/7), y:i%7});
+  }
+  calendar = {account:"Mackeabit", days, total_contributions:days.reduce((n,d)=>n+d.count,0)};
+} else {
+  calendar = JSON.parse(await readFile(path.join(root, ".tmp/repository-activity.json"), "utf8"));
+}
 if (calendar.account.toLowerCase() !== "mackeabit" || calendar.days.length < 365 || calendar.days.length > 371) {
   throw new Error("Invalid repository activity calendar");
 }
@@ -68,7 +91,10 @@ const visited = new Set(chain.map(snake => (snake[0] - 2) + "," + (snake[1] - 2)
 if (cells.some(c => c.count > 0 && !visited.has(c.x + "," + c.y))) {
   throw new Error("Snake route missed an activity cell");
 }
-const palettes = {
+const palettes = ai ? {
+  light: ["#ebedf0", "#cce7ff", "#8dcbff", "#399cf4", "#0969da"],
+  dark: ["#262c36", "#053963", "#075b9c", "#1683d8", "#69b7ff"],
+} : {
   light: ["#e9efec", "#d3e6df", "#9acdbd", "#53ac96", "#13856c"],
   dark: ["#212c26", "#25453b", "#27735f", "#27a78b", "#53d9b9"],
 };
@@ -79,6 +105,6 @@ for (const [theme, colors] of Object.entries(palettes)) {
     colorDotBorder: "#1b1f230a", colorDots: colors,
     colorEmpty: colors[0], colorSnake: "#25c6b0",
   }, { stepDurationMs: 100 });
-  await writeFile(path.join(root, "generated", `snake-${theme}.svg`), svg + "\n");
+  await writeFile(path.join(root, ai ? ".tmp" : "generated", `${ai ? "ai-" : ""}snake-${theme}.svg`), svg + "\n");
 }
 console.log(`Rendered ${cells.length} days, ${calendar.total_contributions} activities, ${chain.length} snake steps with the existing palette and renderer.`);

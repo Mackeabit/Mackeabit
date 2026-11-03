@@ -1,24 +1,31 @@
-# Profile maintenance — Codex activity
+# Profile maintenance — AI Activity
 
-The README now displays account-wide Codex token activity instead of the GitHub contribution snake. The text, logo, and tool icons remain independent Markdown and assets.
+The README displays only a blue activity grid and the original teal snake animation under **AI Activity**. No summary statistics, dates, month names, legend, or extra visible title are drawn into the image. The data source remains actual account-wide Codex token usage.
 
-## Current activity pipeline (2026-11-03)
+## Current pipeline (2026-11-03)
 
-- `scripts/codex_activity.py` reads `account/usage/read` through an already-authenticated Codex app-server. It never starts a model turn.
-- The daily buckets and five summary metrics are validated and explicitly allowlisted. No conversations, account identifiers, email, repository names, or credentials enter the output.
-- `generated/codex-activity.json` contains the published aggregates. Light/dark SVGs are self-contained and require no external fonts, scripts, images, or public server.
-- The calendar displays 53 Sunday-first week columns ending at the latest available daily bucket. Missing dates within the display period are rendered as zero; future cells are omitted. Service date labels are preserved without timezone conversion.
-- Blue levels use quartiles of nonzero daily counts in the displayed range. This reproduces the calendar style, not an undocumented exact Codex color scale. Summary numbers come directly from Codex; they are not recomputed from the rolling calendar.
-- `Data through` shows the latest date returned by the service, which can lag behind today. Null optional summary values show an em dash. Missing/empty data, invalid dates/counts, stale data over seven days, or declining date/lifetime totals stop publication and preserve the previous image.
-- A private, always-on host runs the installed script daily at 00:37 UTC (09:37 Asia/Seoul). The desktop PC is not involved. The private host reuses its existing Codex login and GitHub connector; no GitHub PAT or Codex token is copied into this repository.
-- Publishing opens a temporary, nonpersistent app-server context solely for direct MCP tool calls. It creates one Git tree/commit for the three output files and advances `main` without force using the observed head as a lease. Concurrent updates cause failure, not overwrites. Every published file is read back at the commit SHA.
-- The installed runner is a reviewed snapshot: it does not download or execute newer repository scripts automatically. Deploy script updates deliberately. A failed or uncertain publish is safe to rerun: remote files are compared before another commit.
-- GitHub Actions only runs source tests and checks icon generation. The former daily snake job is retired; old snake files/scripts remain as history and are no longer displayed or scheduled.
+1. A private always-on host runs `scripts/codex_activity.py --publish` at 00:37 UTC (09:37 Asia/Seoul), using its existing Codex login and GitHub connector. It publishes only `generated/codex-activity.json`; it cannot overwrite the animated SVGs.
+2. A push changing that JSON, the renderer/tests, or the workflow triggers **Update AI activity snake** in GitHub Actions. Manual workflow dispatch is also available.
+3. `scripts/render_snake.mjs --ai` maps the daily buckets into a 53-week Sunday-first calendar. Blue levels are quartiles of nonzero counts. It reuses the original pinned Platane/snk solver and renderer at `d8f6715049803e982ee5ff501b6b9b7d5deeb09b`, including the four-segment teal snake, eating cells, looping, size and timing. Every active cell must be visited by the head before output is accepted.
+4. `scripts/render_profile.py --ai-snake-only` removes the bottom consumption bar, retains the original animation and grid, crops to the prior 160px height, and adds a reduced-motion fallback. Light/dark files keep their existing paths.
+5. `scripts/verify_ai_snake.py` verifies source day/active-cell totals, snake and looping CSS presence, no visible text, no consumption bar, and no scripts/foreign objects. Only the two SVGs are committed when changed. Push conflicts fail instead of forcing or overwriting another commit.
 
-Validation: `python3 -B -m unittest discover -s tests -v`.
-Offline preview: `python3 -B scripts/codex_activity.py --input /path/to/usage-response.json`.
-Live read/render: `python3 -B scripts/codex_activity.py --codex /path/to/codex`.
-Live refresh: add `--publish` (requires the existing connected GitHub account and the three initialized output files). For first-time setup only, `--bootstrap` creates all three files when none exist; it refuses a partially missing set.
+The app-server integration never starts model turns or copies credentials. It opens a nonpersistent MCP context and uses the already-connected GitHub account. No account identifiers, email, conversations or credentials enter the allowlisted aggregate JSON. GitHub Actions needs no Codex credentials; it uses its built-in token to publish images. No npm installation is required; the renderer uses Node 22.13+ built-in type erasure, available on the Actions runner.
+
+Missing/invalid/empty data, a date or lifetime-total regression, or data over seven days old stops collection. Render failure leaves the last good animation in place. The service can lag behind today. Dates are preserved as returned, missing buckets inside the calendar are zero, and future cells are omitted. Summary metrics remain in the aggregate source for validation but are not displayed.
+
+The private host runs a reviewed installed copy, not an automatically downloaded script. Deploy collector edits deliberately. Its lock, five-minute timeout and existing daily schedule are retained. Sources and rendered files update in two commits; the image refresh follows the successful Actions run.
+
+Validation:
+
+```sh
+python3 -B -m unittest discover -s tests -v
+node scripts/render_snake.mjs --ai
+python3 -B scripts/render_profile.py --ai-snake-only
+python3 -B scripts/verify_ai_snake.py
+```
+
+The renderer expects the pinned upstream checkout at `.tmp/snk`. The retired GitHub contribution mode remains available without `--ai`; it is no longer scheduled. The image is derived from authentic usage, with a custom quartile color scale rather than an undocumented exact Codex color threshold.
 
 Reference: https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt
 

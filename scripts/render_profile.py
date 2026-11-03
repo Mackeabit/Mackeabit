@@ -59,9 +59,10 @@ def prepare_icons():
     write_svg(ROOT / "assets" / "accent.svg", accent)
 
 
-def prepare_snakes():
+def prepare_snakes(ai=False):
     for theme in ("light", "dark"):
-        svg = ET.parse(ROOT / "generated" / f"snake-{theme}.svg").getroot()
+        source = ROOT / ".tmp" / f"ai-snake-{theme}.svg" if ai else ROOT / "generated" / f"snake-{theme}.svg"
+        svg = ET.parse(source).getroot()
         cells = [node for node in svg.iter() if "c" in node.get("class", "").split()]
         if not 350 <= len(cells) <= 378:
             raise ValueError(f"Unexpected contribution calendar size: {len(cells)}")
@@ -77,12 +78,12 @@ def prepare_snakes():
             if "u" in node.get("class", "").split():
                 svg.remove(node)
         title = element("title")
-        title.text = "Mackeabit's real public repository activity"
+        title.text = "Mackeabit's AI activity" if ai else "Mackeabit's real public repository activity"
         svg.insert(0, title)
         motion = element("style")
         motion.text = "@media(prefers-reduced-motion:reduce){*{animation:none!important}}"
         svg.append(motion)
-        write_svg(ROOT / "generated" / f"trail-{theme}.svg", svg)
+        write_svg(ROOT / "generated" / f"{'codex-activity' if ai else 'trail'}-{theme}.svg", svg)
 
 
 def update_activity():
@@ -118,7 +119,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assets-only", action="store_true", help="Prepare assets from existing snake files without changing activity metadata.")
     parser.add_argument("--icons-only", action="store_true", help="Prepare icon tiles and accent without touching retired contribution graphics.")
+    parser.add_argument("--ai-snake-only", action="store_true", help="Finish the AI activity animation without labels or statistics.")
     args = parser.parse_args()
+    if args.ai_snake_only:
+        prepare_snakes(ai=True)
+        print("Prepared AI activity snakes without summary text.")
+        return
     if not args.assets_only and not args.icons_only:
         update_activity()
     prepare_icons()

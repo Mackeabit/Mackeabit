@@ -1,4 +1,4 @@
-name: Validate profile sources
+name: Update AI activity snake
 
 on:
   workflow_dispatch:
@@ -8,21 +8,44 @@ on:
       - '.github/workflows/profile.yml'
       - 'scripts/**'
       - 'tests/**'
-      - 'assets/icons/**'
+      - 'generated/codex-activity.json'
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: profile-update
+  cancel-in-progress: false
 
 jobs:
-  validate:
+  update:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Validate collection and rendering
+      - name: Validate collection
         run: python3 -B -m unittest discover -s tests -v
-      - name: Check icon generator
-        run: python3 -B scripts/render_profile.py --icons-only
-
-# Codex activity is refreshed by the authenticated private host.
-# GitHub Actions needs no Codex credentials and no longer generates snakes.
+      - name: Read the existing pinned snake renderer
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: Platane/snk
+          ref: d8f6715049803e982ee5ff501b6b9b7d5deeb09b
+          path: .tmp/snk
+          persist-credentials: false
+      - name: Generate snake from AI token activity
+        run: node scripts/render_snake.mjs --ai
+      - name: Keep only the animated grass
+        run: python3 -B scripts/render_profile.py --ai-snake-only
+      - name: Validate animation output
+        run: python3 -B scripts/verify_ai_snake.py
+      - name: Publish animation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add generated/codex-activity-dark.svg generated/codex-activity-light.svg
+          if git diff --cached --quiet; then
+            echo "AI activity animation already up to date."
+            exit 0
+          fi
+          git commit -m "Refresh AI activity snake"
+          git push origin HEAD:main

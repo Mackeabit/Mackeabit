@@ -18,9 +18,9 @@ I build tools around everyday needs, with a focus on automation, simplicity, and
 
 [![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
 
-### Codex Activity
+### AI Activity
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./generated/codex-activity-dark.svg">
-  <img src="./generated/codex-activity-light.svg" width="100%" alt="Mackeabit's daily Codex token activity, lifetime tokens, and activity streaks.">
+  <img src="./generated/codex-activity-light.svg" width="100%" alt="A snake follows Mackeabit's AI activity.">
 </picture>

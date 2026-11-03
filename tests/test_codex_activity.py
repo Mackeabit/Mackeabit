@@ -44,20 +44,9 @@ class UsageTests(unittest.TestCase):
         self.assertNotIn('private@example.com',str(result))
         self.assertNotIn('do-not-export',str(result))
 
-    def test_calendar_preserves_counts_and_handles_week_boundary(self):
-        data=self.norm(usage())
-        for theme in ['dark','light']:
-            root=ET.fromstring(m.render(data,theme))
-            cells=[n for n in root if n.get('data-date')]
-            self.assertEqual(len(cells),366)
-            self.assertEqual(cells[-1].get('data-date'),'2026-11-02')
-            self.assertEqual(sum(int(n.get('data-tokens')) for n in cells),200)
-            self.assertEqual(len(set(n.get('data-date') for n in cells)),len(cells))
-            self.assertTrue(all(n.tag.rsplit('}',1)[-1] not in {'script','foreignObject','image'} for n in root.iter()))
-
-    def test_missing_optional_summary_is_visible(self):
-        raw=usage();raw['summary']['longestRunningTurnSec']=None
-        self.assertIn('—',m.render(self.norm(raw),'dark'))
+    def test_collector_cannot_overwrite_animation(self):
+        result=m.outputs(self.norm(usage()))
+        self.assertEqual(set(result), {'generated/codex-activity.json'})
 
 
 if __name__=='__main__':unittest.main()
