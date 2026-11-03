@@ -103,7 +103,7 @@ for (const [theme, colors] of Object.entries(palettes)) {
   const svg = createSvg(grid, cells, chain, {
     sizeDotBorderRadius: 2, sizeCell: 16, sizeDot: 12,
     colorDotBorder: "#1b1f230a", colorDots: colors,
-    colorEmpty: colors[0], colorSnake: "#25c6b0",
+    colorEmpty: colors[0], colorSnake: ai ? (theme === "dark" ? "#b8e3ff" : "#174ea6") : "#25c6b0",
   }, { stepDurationMs: 100 });
   await writeFile(path.join(root, ai ? ".tmp" : "generated", `${ai ? "ai-" : ""}snake-${theme}.svg`), svg + "\n");
 }

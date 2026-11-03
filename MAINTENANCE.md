@@ -1,12 +1,12 @@
-# Profile maintenance — AI Activity
+# Profile maintenance — Activity
 
-The README displays only a blue activity grid and the original teal snake animation under **AI Activity**. No summary statistics, dates, month names, legend, or extra visible title are drawn into the image. The data source remains actual account-wide Codex token usage.
+The README displays only a blue activity grid and a matching blue snake animation under **Activity**. The snake is pale sky blue (`#b8e3ff`) in dark mode and deep blue (`#174ea6`) in light mode. No summary statistics, dates, month names, legend, or extra visible title are drawn into the image. The data source remains actual account-wide Codex token usage.
 
 ## Current pipeline (2026-11-03)
 
 1. A private always-on host runs `scripts/codex_activity.py --publish` at 00:37 UTC (09:37 Asia/Seoul), using its existing Codex login and GitHub connector. It publishes only `generated/codex-activity.json`; it cannot overwrite the animated SVGs.
 2. A push changing that JSON, the renderer/tests, or the workflow triggers **Update AI activity snake** in GitHub Actions. Manual workflow dispatch is also available.
-3. `scripts/render_snake.mjs --ai` maps the daily buckets into a 53-week Sunday-first calendar. Blue levels are quartiles of nonzero counts. It reuses the original pinned Platane/snk solver and renderer at `d8f6715049803e982ee5ff501b6b9b7d5deeb09b`, including the four-segment teal snake, eating cells, looping, size and timing. Every active cell must be visited by the head before output is accepted.
+3. `scripts/render_snake.mjs --ai` maps the daily buckets into a 53-week Sunday-first calendar. Blue levels are quartiles of nonzero counts. It reuses the original pinned Platane/snk solver and renderer at `d8f6715049803e982ee5ff501b6b9b7d5deeb09b`, including the four-segment snake, eating cells, looping, size and timing. Every active cell must be visited by the head before output is accepted.
 4. `scripts/render_profile.py --ai-snake-only` removes the bottom consumption bar, retains the original animation and grid, crops to the prior 160px height, and adds a reduced-motion fallback. Light/dark files keep their existing paths.
 5. `scripts/verify_ai_snake.py` verifies source day/active-cell totals, snake and looping CSS presence, no visible text, no consumption bar, and no scripts/foreign objects. Only the two SVGs are committed when changed. Push conflicts fail instead of forcing or overwriting another commit.
 

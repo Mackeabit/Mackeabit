@@ -78,7 +78,7 @@ def prepare_snakes(ai=False):
             if "u" in node.get("class", "").split():
                 svg.remove(node)
         title = element("title")
-        title.text = "Mackeabit's AI activity" if ai else "Mackeabit's real public repository activity"
+        title.text = "Mackeabit's activity" if ai else "Mackeabit's real public repository activity"
         svg.insert(0, title)
         motion = element("style")
         motion.text = "@media(prefers-reduced-motion:reduce){*{animation:none!important}}"
