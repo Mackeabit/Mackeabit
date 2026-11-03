@@ -22,5 +22,5 @@ I build tools around everyday needs, with a focus on automation, simplicity, and
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./generated/codex-activity-dark.svg">
-  <img src="./generated/codex-activity-light.svg" width="100%" alt="A lavender comet travels across Mackeabit's activity.">
+  <img src="./generated/codex-activity-light.svg" width="100%" alt="A glowing lavender snake follows Mackeabit's activity.">
 </picture>

@@ -4,7 +4,6 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { createComet } from "./render_comet.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const upstream = path.join(root, ".tmp/snk/packages");
@@ -101,11 +100,11 @@ const palettes = ai ? {
 };
 await mkdir(path.join(root, "generated"), { recursive: true });
 for (const [theme, colors] of Object.entries(palettes)) {
-  const svg = ai ? createComet(cells, chain, colors, theme) : createSvg(grid, cells, chain, {
+  const svg = createSvg(grid, cells, chain, {
     sizeDotBorderRadius: 2, sizeCell: 16, sizeDot: 12,
     colorDotBorder: "#1b1f230a", colorDots: colors,
-    colorEmpty: colors[0], colorSnake: "#25c6b0",
+    colorEmpty: colors[0], colorSnake: ai ? (theme === "dark" ? "#c4b5fd" : "#8b5cf6") : "#25c6b0",
   }, { stepDurationMs: 100 });
   await writeFile(path.join(root, ai ? ".tmp" : "generated", `${ai ? "ai-" : ""}snake-${theme}.svg`), svg + "\n");
 }
-console.log(`Rendered ${cells.length} days, ${calendar.total_contributions} activities, ${chain.length} route steps with the ${ai ? "comet" : "snake"} renderer.`);
+console.log(`Rendered ${cells.length} days, ${calendar.total_contributions} activities, ${chain.length} route steps with the snake renderer.`);

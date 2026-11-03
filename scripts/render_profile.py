@@ -66,13 +66,13 @@ def prepare_snakes(ai=False):
         cells = [node for node in svg.iter() if "c" in node.get("class", "").split()]
         if not 350 <= len(cells) <= 378:
             raise ValueError(f"Unexpected contribution calendar size: {len(cells)}")
-        if not any(("comet" if ai else "s") in node.get("class", "").split() for node in svg.iter()):
+        if not any("s" in node.get("class", "").split() for node in svg.iter()):
             raise ValueError("Activity animation is missing")
         # Keep the generated path and original cells. Omit only the consumption bar.
         vx, vy, vw, _ = map(float, svg.get("viewBox").split())
         svg.set("viewBox", f"{vx:g} {vy:g} {vw:g} 160")
         svg.set("height", "160")
-        svg.set("id", "activity-comet" if ai else "contribution-snake")
+        svg.set("id", "contribution-snake")
         svg.set("role", "img")
         for node in list(svg):
             if "u" in node.get("class", "").split():
@@ -80,6 +80,19 @@ def prepare_snakes(ai=False):
         title = element("title")
         title.text = "Mackeabit's activity" if ai else "Mackeabit's real public repository activity"
         svg.insert(0, title)
+        if ai:
+            defs = element("defs")
+            glow = element("filter", id="snake-glow", x="-60%", y="-60%", width="220%", height="220%", color_interpolation_filters="sRGB")
+            glow.append(element("feGaussianBlur", **{"in": "SourceGraphic", "stdDeviation": "2", "result": "halo"}))
+            merge = element("feMerge")
+            merge.append(element("feMergeNode", **{"in": "halo"}))
+            merge.append(element("feMergeNode", **{"in": "SourceGraphic"}))
+            glow.append(merge)
+            defs.append(glow)
+            svg.insert(1, defs)
+            effects = element("style")
+            effects.text = ".s.s0{filter:url(#snake-glow)}.s.s1{opacity:.9}.s.s2{opacity:.75}.s.s3{opacity:.55}"
+            svg.append(effects)
         motion = element("style")
         motion.text = "@media(prefers-reduced-motion:reduce){*{animation:none!important}}"
         svg.append(motion)
@@ -123,7 +136,7 @@ def main():
     args = parser.parse_args()
     if args.ai_snake_only:
         prepare_snakes(ai=True)
-        print("Prepared activity comets without summary text.")
+        print("Prepared lavender activity snakes with head glow and fading tails.")
         return
     if not args.assets_only and not args.icons_only:
         update_activity()
