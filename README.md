@@ -8,8 +8,6 @@
 
 I build tools around everyday needs, with a focus on automation, simplicity, and the details that make them better.
 
-<sub>[thdtmdgh7775@gmail.com](mailto:thdtmdgh7775@gmail.com)</sub>
-
 ### Focus
 
 - **AI & Automation** — Less repetition. More room to think.
