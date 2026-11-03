@@ -1,4 +1,4 @@
-name: Update AI activity snake
+name: Update activity comet
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
           ref: d8f6715049803e982ee5ff501b6b9b7d5deeb09b
           path: .tmp/snk
           persist-credentials: false
-      - name: Generate snake from AI token activity
+      - name: Generate comet from AI token activity
         run: node scripts/render_snake.mjs --ai
       - name: Keep only the animated grass
         run: python3 -B scripts/render_profile.py --ai-snake-only
@@ -47,5 +47,5 @@ jobs:
             echo "AI activity animation already up to date."
             exit 0
           fi
-          git commit -m "Refresh AI activity snake"
+          git commit -m "Refresh activity comet"
           git push origin HEAD:main
