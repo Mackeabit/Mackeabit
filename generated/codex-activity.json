@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "source": "Codex account/usage/read",
-  "dataThrough": "2026-11-17",
+  "dataThrough": "2026-11-18",
   "summary": {
-    "lifetimeTokens": 10091684408,
+    "lifetimeTokens": 10298883962,
     "peakDailyTokens": 608666934,
     "longestRunningTurnSec": 14043,
-    "currentStreakDays": 73,
-    "longestStreakDays": 73
+    "currentStreakDays": 74,
+    "longestStreakDays": 74
   },
   "days": [
     {
@@ -768,7 +768,11 @@
     },
     {
       "date": "2026-11-17",
-      "tokens": 142901035
+      "tokens": 212754682
+    },
+    {
+      "date": "2026-11-18",
+      "tokens": 137345907
     }
   ]
 }
