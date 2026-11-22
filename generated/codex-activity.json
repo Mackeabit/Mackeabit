@@ -3,7 +3,7 @@
   "source": "Codex account/usage/read",
   "dataThrough": "2026-11-20",
   "summary": {
-    "lifetimeTokens": 11030024096,
+    "lifetimeTokens": 11117665926,
     "peakDailyTokens": 608666934,
     "longestRunningTurnSec": 24023,
     "currentStreakDays": 76,
@@ -780,7 +780,7 @@
     },
     {
       "date": "2026-11-20",
-      "tokens": 95982652
+      "tokens": 183624482
     }
   ]
 }
