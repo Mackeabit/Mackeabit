@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "source": "Claude Code local transcripts",
+  "host": "9f9976c6",
+  "dataThrough": "2026-11-27",
+  "days": [
+    {
+      "date": "2026-11-26",
+      "tokens": 6003095
+    },
+    {
+      "date": "2026-11-27",
+      "tokens": 60620484
+    }
+  ]
+}
