@@ -47,23 +47,54 @@ class CollectTests(unittest.TestCase):
         self.assertEqual(self.collect([lines]), {'2026-11-27': 116})
 
 
+class MultiHostTests(unittest.TestCase):
+    def test_response_shared_by_two_machines_counts_once_for_the_first(self):
+        server = {'a' * 16: ('2026-11-27', 100), 'b' * 16: ('2026-11-27', 50)}
+        laptop = {'b' * 16: ('2026-11-27', 50), 'c' * 16: ('2026-11-26', 7)}
+        self.assertEqual(claude.assign([('11111111', server), ('22222222', laptop)]),
+                         [('11111111', {'2026-11-27': 150}), ('22222222', {'2026-11-26': 7})])
+
+    def test_emit_carries_only_hashes_dates_and_totals(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'projects' / 'p' / 's.jsonl'
+            path.parent.mkdir(parents=True)
+            path.write_text(line('msg_secret', 'req_secret', '2026-11-27T01:00:00Z') + '\n', encoding='utf-8')
+            sent = json.dumps(claude.emit('0a1b2c3d', claude.responses([Path(tmp)], TODAY)))
+        for private in ('msg_secret', 'req_secret', 'secret-project', 'claude-opus', 'private'): self.assertNotIn(private, sent)
+        host, found = claude.parse_emit(json.loads(sent), TODAY)
+        self.assertEqual((host, list(found.values())), ('0a1b2c3d', [('2026-11-27', 116)]))
+
+    def test_remote_records_are_validated(self):
+        good = {'schema': 1, 'source': claude.SOURCE, 'host': '0a1b2c3d', 'responses': [['a' * 16, '2026-11-27', 5]]}
+        self.assertEqual(claude.parse_emit(good, TODAY)[1], {'a' * 16: ('2026-11-27', 5)})
+        self.assertEqual(claude.parse_emit({**good, 'responses': [['a' * 16, '2026-11-28', 5]]}, TODAY)[1], {})
+        for bad in ({**good, 'host': 'laptop'}, {**good, 'responses': [['raw-id', '2026-11-27', 5]]},
+                    {**good, 'responses': [['a' * 16, '2026-11-27', -1]]}):
+            with self.assertRaises(ValueError): claude.parse_emit(bad, TODAY)
+
+
 class PublishShapeTests(unittest.TestCase):
     def test_merge_never_shrinks_published_days(self):
-        data = claude.build('0a1b2c3d', {'2026-11-26': 50, '2026-11-27': 300}, {'2026-11-01': 7, '2026-11-26': 90})
+        data = claude.build('0a1b2c3d', {'2026-11-26': 50, '2026-11-27': 300}, {'2026-11-01': 7, '2026-11-26': 90}, TODAY)
         self.assertEqual(data['days'], [{'date': '2026-11-01', 'tokens': 7}, {'date': '2026-11-26', 'tokens': 90},
                                         {'date': '2026-11-27', 'tokens': 300}])
         self.assertEqual(data['dataThrough'], '2026-11-27')
 
+    def test_published_days_older_than_a_week_are_final_but_new_old_days_are_added(self):
+        data = claude.build('0a1b2c3d', {'2026-11-10': 999, '2026-11-11': 4, '2026-11-25': 999},
+                            {'2026-11-10': 5, '2026-11-25': 6}, TODAY)
+        self.assertEqual({d['date']: d['tokens'] for d in data['days']}, {'2026-11-10': 5, '2026-11-11': 4, '2026-11-25': 999})
+
     def test_empty_usage_is_refused(self):
-        with self.assertRaises(ValueError): claude.build('0a1b2c3d', {}, {})
+        with self.assertRaises(ValueError): claude.build('0a1b2c3d', {}, {}, TODAY)
 
     def test_only_dates_totals_and_random_host_are_exported(self):
-        text = claude.render(claude.build('0a1b2c3d', {'2026-11-27': 116}, {}))
+        text = claude.render(claude.build('0a1b2c3d', {'2026-11-27': 116}, {}, TODAY))
         self.assertEqual(set(json.loads(text)), {'schema', 'source', 'host', 'dataThrough', 'days'})
         for private in ('secret-project', 'claude-opus', 'private', 'm1'): self.assertNotIn(private, text)
 
     def test_published_copy_is_validated(self):
-        good = claude.build('0a1b2c3d', {'2026-11-27': 1}, {})
+        good = claude.build('0a1b2c3d', {'2026-11-27': 1}, {}, TODAY)
         self.assertEqual(claude.validate(good, '0a1b2c3d', TODAY), {'2026-11-27': 1})
         for bad in ({**good, 'host': 'ffffffff'}, {**good, 'days': [{'date': '2026-11-28', 'tokens': 1}]},
                     {**good, 'days': [{'date': '2026-11-27', 'tokens': -1}]}):

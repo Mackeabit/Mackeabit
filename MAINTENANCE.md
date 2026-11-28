@@ -33,32 +33,25 @@ Reference: https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt
 
 ## Claude Code hosts
 
-Claude Pro/Max has no account-wide token API (`/usage` and the Claude Code Analytics API do not cover it), so each machine reports what its own Claude Code transcripts recorded.
+Claude Pro/Max has no account-wide token API (`/usage` and the Claude Code Analytics API do not cover it), so usage is read from each machine's own Claude Code transcripts.
+
+- **One hub, no credentials on other machines:** a single hub machine runs `scripts/claude_activity.py --publish --remote <alias> ...` once a day. For each `--remote` SSH alias (key authentication, `BatchMode`), the script sends itself over SSH stdin and runs there with `--emit`; the remote needs only Python 3.10+ (`alias=C:/path/python.exe` for a Windows remote). The remote returns hashed response ids with dates and totals; it needs no GitHub login and nothing is installed there except its `~/.mackeabit-profile/claude-host-id`.
+- **Counted once across machines:** a response recorded on more than one machine (for example an SSH session also logged by the client) is counted for the first machine in run order: the hub, then `--remote` in the order given. Put always-on servers before laptops. An unreachable machine is reported and skipped; the others still publish.
 
 - **What is counted:** `~/.claude/projects/**/*.jsonl` (or `CLAUDE_CONFIG_DIR`), assistant responses only. Input, output, cache-write and cache-read tokens are summed, which matches how the Codex total counts cached input. A response repeated by streaming or a resumed session (same message id and request id) is counted once. Days are UTC. The current, incomplete day is never published.
 - **What is published:** `generated/claude-activity/<host-id>.json` with only dates and daily totals. The host id is 8 random hex characters stored in `~/.mackeabit-profile/claude-host-id`; no hostname, user, path, project, model or text is published. Each host writes only its own file, so hosts never conflict with each other.
-- **History is kept:** Claude Code deletes transcripts after `cleanupPeriodDays` (30 by default). The collector merges with the copy already on `main` and keeps the larger total for each day, so cleanup never removes published days. A machine only needs to publish at least once every 30 days.
-- **Token:** `GH_TOKEN`/`GITHUB_TOKEN`, otherwise `gh auth token`, otherwise git's own GitHub login (`git credential fill`, non-interactive, e.g. Git Credential Manager). For a server without `gh`, use a fine-grained token limited to this repository with Contents read/write. The token is never stored by the script.
-- **Failure:** No usage at all, invalid published data, or a second write conflict stops without writing. Never force-push.
+- **History is kept:** Claude Code deletes transcripts after `cleanupPeriodDays` (30 by default). The collector merges with the copy already on `main` and keeps the larger total for each day, so cleanup never removes published days. Published days older than 7 days are final, so a response whose copy disappears from one machine later cannot be counted again elsewhere. Every machine must be reachable by the hub at least once every 30 days.
+- **Token (hub only):** `GH_TOKEN`/`GITHUB_TOKEN`, otherwise `gh auth token`, otherwise git's own GitHub login (`git credential fill`, non-interactive, e.g. Git Credential Manager). The token is never stored by the script.
+- **Failure:** No usage at all, invalid published or remote data, or a second write conflict stops that machine without writing. The exit status is nonzero when any machine failed. Never force-push.
 
-Run once per machine (`--publish` omitted = dry run that prints the totals only):
-
-```sh
-python3 -B scripts/claude_activity.py            # dry run
-python3 -B scripts/claude_activity.py --publish  # merge into main
-```
-
-Daily schedule, using an installed copy of the reviewed script. Pick a different minute per host after 00:37 UTC:
-
-```powershell
-# Windows (Task Scheduler, runs as the current user)
-schtasks /Create /TN "Profile Claude activity" /SC DAILY /ST 09:50 /TR "pythonw -B C:\path\to\claude_activity.py --publish"
-```
+Dry run (prints per-machine totals, publishes nothing), then publish:
 
 ```sh
-# Linux/macOS (crontab -e, UTC host)
-50 0 * * * /usr/bin/python3 -B $HOME/profile-activity/claude_activity.py --publish >> $HOME/profile-activity/log.txt 2>&1
+python3 -B scripts/claude_activity.py --remote server-a --remote laptop=C:/Python313/python.exe
+python3 -B scripts/claude_activity.py --publish --remote server-a --remote laptop=C:/Python313/python.exe
 ```
+
+The hub runs an installed copy of the reviewed script daily after 00:37 UTC (Windows Task Scheduler with `pythonw -I -B`, "run as soon as possible after a missed start"). Adding a machine = add an SSH alias on the hub and one more `--remote` to that task.
 
 ## Historical GitHub snake pipeline (retired 2026-11-03)
 
