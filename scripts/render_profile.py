@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", NS)
-TOOLS = ("Java", "Python", "Git", "Codex", "Obsidian")
+TOOLS = ("Java", "Python", "Git", "Codex", "Claude Code", "Obsidian")
 
 
 def element(name, **attributes):
@@ -33,7 +33,7 @@ def write_svg(path, svg):
 
 def prepare_icons():
     for label in TOOLS:
-        name = label.lower()
+        name = label.lower().replace(" ", "")
         tile = element("svg", width=56, height=56, viewBox="0 0 56 56", role="img")
         title = ET.SubElement(tile, f"{{{NS}}}title")
         title.text = label

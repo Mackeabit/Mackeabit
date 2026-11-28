@@ -16,7 +16,7 @@ I build tools around everyday needs, with a focus on automation, simplicity, and
 
 ### Tech & Tools
 
-[![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
+[![Java](./assets/tools/java.svg)](https://www.java.com/) [![Python](./assets/tools/python.svg)](https://www.python.org/) [![Git](./assets/tools/git.svg)](https://git-scm.com/) [![Codex](./assets/tools/codex.svg)](https://openai.com/codex/) [![Claude Code](./assets/tools/claudecode.svg)](https://claude.com/product/claude-code) [![Obsidian](./assets/tools/obsidian.svg)](https://obsidian.md/)
 
 ### Activity
 

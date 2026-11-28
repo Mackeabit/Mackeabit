@@ -5,7 +5,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 root = Path(__file__).resolve().parents[1]
-data = json.loads((root/'generated/codex-activity.json').read_text(encoding='utf-8'))
+data = json.loads((root/'.tmp/ai-activity.json').read_text(encoding='utf-8'))  # Codex + Claude, per day
 end = date.fromisoformat(data['dataThrough'])
 start = end-timedelta(days=(end.weekday()+1)%7+364)
 expected_days = (end-start).days+1

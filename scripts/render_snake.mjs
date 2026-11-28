@@ -52,7 +52,8 @@ const [{ getBestRoute }, { getPathToPose }, { createSvg }, { snake4 }, { cellsTo
 const ai = process.argv.includes("--ai");
 let calendar;
 if (ai) {
-  const data = JSON.parse(await readFile(path.join(root, "generated/codex-activity.json"), "utf8"));
+  // Codex + every Claude Code host, summed per day by scripts/ai_activity.py.
+  const data = JSON.parse(await readFile(path.join(root, ".tmp/ai-activity.json"), "utf8"));
   const end = new Date(data.dataThrough + "T00:00:00Z");
   if (!Number.isFinite(end.getTime()) || !Array.isArray(data.days)) throw new Error("Invalid AI activity data");
   const start = new Date(end);

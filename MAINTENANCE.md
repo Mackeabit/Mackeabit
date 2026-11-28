@@ -1,14 +1,15 @@
 # Profile maintenance — Activity
 
-The README displays a blue activity grid and a lavender snake under **Activity**. The snake is lavender (`#c4b5fd`) in dark mode and deeper violet (`#8b5cf6`) in light mode, with a subtle head glow and a progressively translucent tail. It consumes activity cells and loops. No summary statistics, dates, month names, legend, or extra visible title are drawn into the image. The data source remains actual account-wide Codex token usage.
+The README displays a blue activity grid and a lavender snake under **Activity**. The snake is lavender (`#c4b5fd`) in dark mode and deeper violet (`#8b5cf6`) in light mode, with a subtle head glow and a progressively translucent tail. It consumes activity cells and loops. No summary statistics, dates, month names, legend, per-tool colors or extra visible title are drawn into the image. Each cell is the day's actual Codex tokens plus Claude Code tokens from every machine that publishes them.
 
-## Current pipeline (2026-11-03)
+## Current pipeline (2026-11-28)
 
 1. A private always-on host runs `scripts/codex_activity.py --publish` at 00:37 UTC (09:37 Asia/Seoul), using its existing Codex login and GitHub connector. It publishes only `generated/codex-activity.json`; it cannot overwrite the animated SVGs.
-2. A push changing that JSON, the renderer/tests, or the workflow triggers **Update activity snake** in GitHub Actions. Manual workflow dispatch is also available.
-3. `scripts/render_snake.mjs --ai` maps the daily buckets into a 53-week Sunday-first calendar. Blue levels are quartiles of nonzero counts. It reuses the original pinned Platane/snk route solver and SVG renderer at `d8f6715049803e982ee5ff501b6b9b7d5deeb09b`, including the original four-part snake and cell consumption animation. Every active cell must be visited by the head before output is accepted.
-4. `scripts/render_profile.py --ai-snake-only` prepares the snake and grid at the existing 160px height, adds a Gaussian head glow and fading tail, and retains the reduced-motion fallback. Reduced-motion mode stops animations and preserves the initial calendar. Light/dark files keep their existing paths.
-5. `scripts/verify_ai_snake.py` verifies every cell position and initial color against the daily source, day/active-cell totals, four snake segments, lavender color, head glow, fading tail and looping CSS, reduced-motion handling, no visible text, no consumption bar, and no scripts/foreign objects. Only the two SVGs are committed when changed. Push conflicts fail instead of forcing or overwriting another commit.
+2. Every machine that runs Claude Code (desktop, laptop, servers) runs `scripts/claude_activity.py --publish` once a day. See **Claude Code hosts** below.
+3. A push changing that data, the renderer/tests, or the workflow triggers **Update activity snake** in GitHub Actions. The job always checks out the newest `main`, so a run started by one host also includes data that other hosts published meanwhile. Manual workflow dispatch is also available.
+4. `scripts/ai_activity.py` sums Codex and all Claude host files per UTC day into `.tmp/ai-activity.json`; the renderer and the verifier both read that one file. `scripts/render_snake.mjs --ai` maps the daily buckets into a 53-week Sunday-first calendar. Blue levels are quartiles of nonzero counts. It reuses the original pinned Platane/snk route solver and SVG renderer at `d8f6715049803e982ee5ff501b6b9b7d5deeb09b`, including the original four-part snake and cell consumption animation. Every active cell must be visited by the head before output is accepted.
+5. `scripts/render_profile.py --ai-snake-only` prepares the snake and grid at the existing 160px height, adds a Gaussian head glow and fading tail, and retains the reduced-motion fallback. Reduced-motion mode stops animations and preserves the initial calendar. Light/dark files keep their existing paths.
+6. `scripts/verify_ai_snake.py` verifies every cell position and initial color against the daily source, day/active-cell totals, four snake segments, lavender color, head glow, fading tail and looping CSS, reduced-motion handling, no visible text, no consumption bar, and no scripts/foreign objects. Only the two SVGs are committed when changed. Push conflicts fail instead of forcing or overwriting another commit.
 
 The app-server integration never starts model turns or copies credentials. It opens a nonpersistent MCP context and uses the already-connected GitHub account. No account identifiers, email, conversations or credentials enter the allowlisted aggregate JSON. GitHub Actions needs no Codex credentials; it uses its built-in token to publish images. No npm installation is required; the renderer uses Node 22.13+ built-in type erasure, available on the Actions runner.
 
@@ -20,6 +21,7 @@ Validation:
 
 ```sh
 python3 -B -m unittest discover -s tests -v
+python3 -B scripts/ai_activity.py
 node scripts/render_snake.mjs --ai
 python3 -B scripts/render_profile.py --ai-snake-only
 python3 -B scripts/verify_ai_snake.py
@@ -29,16 +31,45 @@ The renderer expects the pinned upstream checkout at `.tmp/snk`. The retired Git
 
 Reference: https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt
 
+## Claude Code hosts
+
+Claude Pro/Max has no account-wide token API (`/usage` and the Claude Code Analytics API do not cover it), so each machine reports what its own Claude Code transcripts recorded.
+
+- **What is counted:** `~/.claude/projects/**/*.jsonl` (or `CLAUDE_CONFIG_DIR`), assistant responses only. Input, output, cache-write and cache-read tokens are summed, which matches how the Codex total counts cached input. A response repeated by streaming or a resumed session (same message id and request id) is counted once. Days are UTC. The current, incomplete day is never published.
+- **What is published:** `generated/claude-activity/<host-id>.json` with only dates and daily totals. The host id is 8 random hex characters stored in `~/.mackeabit-profile/claude-host-id`; no hostname, user, path, project, model or text is published. Each host writes only its own file, so hosts never conflict with each other.
+- **History is kept:** Claude Code deletes transcripts after `cleanupPeriodDays` (30 by default). The collector merges with the copy already on `main` and keeps the larger total for each day, so cleanup never removes published days. A machine only needs to publish at least once every 30 days.
+- **Token:** `GH_TOKEN`/`GITHUB_TOKEN`, otherwise `gh auth token`, otherwise git's own GitHub login (`git credential fill`, non-interactive, e.g. Git Credential Manager). For a server without `gh`, use a fine-grained token limited to this repository with Contents read/write. The token is never stored by the script.
+- **Failure:** No usage at all, invalid published data, or a second write conflict stops without writing. Never force-push.
+
+Run once per machine (`--publish` omitted = dry run that prints the totals only):
+
+```sh
+python3 -B scripts/claude_activity.py            # dry run
+python3 -B scripts/claude_activity.py --publish  # merge into main
+```
+
+Daily schedule, using an installed copy of the reviewed script. Pick a different minute per host after 00:37 UTC:
+
+```powershell
+# Windows (Task Scheduler, runs as the current user)
+schtasks /Create /TN "Profile Claude activity" /SC DAILY /ST 09:50 /TR "pythonw -B C:\path\to\claude_activity.py --publish"
+```
+
+```sh
+# Linux/macOS (crontab -e, UTC host)
+50 0 * * * /usr/bin/python3 -B $HOME/profile-activity/claude_activity.py --publish >> $HOME/profile-activity/log.txt 2>&1
+```
+
 ## Historical GitHub snake pipeline (retired 2026-11-03)
 
 The following records describe the former pipeline, not the current schedule or README activity source.
 
 # Profile maintenance
 
-The introduction, interests, headings and tool names are real Markdown in `README.md`. The supplied Mackeabit logo, five monochrome tool icons and teal contribution snake are separate images.
+The introduction, interests, headings and tool names are real Markdown in `README.md`. The supplied Mackeabit logo, six monochrome tool icons and teal contribution snake are separate images.
 
 - Edit wording and links directly in `README.md`. The workflow never overwrites this file.
-- Java, Python, Git, Codex and Obsidian each have their own SVG icon and official link. Icon originals and licenses are kept in `assets/icons/` and `licenses/`.
+- Java, Python, Git, Codex, Claude Code and Obsidian each have their own SVG icon and official link. Icon originals and licenses are kept in `assets/icons/` and `licenses/`.
 - `scripts/render_profile.py` prepares the monochrome icon tiles, teal accent line and standalone light/dark contribution animations using Python's standard library.
 - `scripts/collect_activity.py` reads public, owned, non-fork repositories directly through the GitHub REST API. It counts commits attributed to Mackeabit on each default branch, plus issues and pull requests created by Mackeabit. Dates use UTC; duplicate commit SHAs and issue IDs are counted once. Automation authored by other accounts is excluded.
 - Private repositories, contributions to other owners' repositories, reviews, discussions and repository creation are outside this scope. These activity totals are real, but are not GitHub's official contribution-calendar totals. Making the profile private does not make its public repositories private.
